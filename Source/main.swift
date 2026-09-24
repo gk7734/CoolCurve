@@ -142,9 +142,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var quitting = false, requested = false, lastSample: Sample?
     let dashboard = DashboardModel()
     var window: NSWindow!, sensorTimer: Timer?
+    let popover = NSPopover()
+    @objc func togglePopover() {
+        if popover.isShown { popover.performClose(nil); return }
+        guard let button = item.button else { return }
+        refresh()
+        popover.show(relativeTo:button.bounds,of:button,preferredEdge:.minY)
+        popover.contentViewController?.view.window?.makeKey()
+    }
     let sensorQueue = DispatchQueue(label:"local.coolcurve.sensors")
     var readingSensors = false
     @objc func showDashboard() {
+        popover.performClose(nil)
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps:true)
     }
@@ -165,7 +174,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(withTitle:"설정과 사용 안내",action:#selector(guide),keyEquivalent:"")
         menu.addItem(withTitle:"자동 복귀 후 종료",action:#selector(quit),keyEquivalent:"q")
         for i in menu.items { i.target = self }
-        item.menu = menu
+        menu.autoenablesItems = false
+        item.button?.target = self
+        item.button?.action = #selector(togglePopover)
+        item.button?.toolTip = "CoolCurve · 온도와 팬 속도 보기"
+        popover.behavior = .transient
+        popover.contentSize = NSSize(width:330,height:440)
+        popover.contentViewController = NSHostingController(rootView:MenuPanelView(model:dashboard,
+            openDashboard:{ [weak self] in self?.showDashboard() },
+            openGuide:{ [weak self] in self?.popover.performClose(nil); self?.guide() }))
+        let mainMenu = NSMenu(), appMenu = NSMenu()
+        let root = NSMenuItem(); root.title = "CoolCurve"; root.submenu = appMenu; mainMenu.addItem(root)
+        let popupCommand = appMenu.addItem(withTitle:"메뉴 막대 팝업 열기",action:#selector(togglePopover),keyEquivalent:"m")
+        popupCommand.keyEquivalentModifierMask = [.command,.shift]
+        appMenu.addItem(withTitle:"대시보드 열기",action:#selector(showDashboard),keyEquivalent:"1")
+        appMenu.addItem(.separator())
+        appMenu.addItem(withTitle:"자동 복귀 후 종료",action:#selector(quit),keyEquivalent:"q")
+        for entry in appMenu.items { entry.target = self }
+        NSApp.mainMenu = mainMenu
         NSWorkspace.shared.notificationCenter.addObserver(self,selector:#selector(sleeping),name:NSWorkspace.willSleepNotification,object:nil)
         dashboard.start = { [weak self] in self?.start() }
         dashboard.stop = { [weak self] in self?.stop() }
@@ -226,6 +252,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         status.title = dashboard.statusTitle
     }
     @objc func start() {
+        popover.performClose(nil)
         guard !requested, authorizer == nil, dashboard.fresh, let updated = dashboard.updated, Date().timeIntervalSince(updated) < 10, modelID() == "Mac17,16", let s = lastSample, s.mode == 0 || s.mode == 3 else {
             alert("시작할 수 없음","이 빌드는 Mac17,16 전용입니다. Stats와 Macs Fan Control을 자동 모드로 두고 다시 시도하세요."); return
         }

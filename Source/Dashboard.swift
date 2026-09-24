@@ -75,7 +75,7 @@ struct DashboardView: View {
                     Text("Mac mini M5 Pro · 냉각 대시보드").font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text("로컬 시험판 0.3").font(.caption).foregroundStyle(.secondary)
+                Text("로컬 시험판 0.4").font(.caption).foregroundStyle(.secondary)
                     .padding(.horizontal,11).padding(.vertical,6).background(.quaternary,in:Capsule())
             }
             HStack(spacing:8) {
@@ -271,5 +271,71 @@ struct HistoryGraph: View {
             }
             if points.count < 2 { Text("온도 기록을 모으고 있어요").font(.caption).foregroundStyle(.secondary) }
         }.accessibilityLabel("최근 5분 CPU와 GPU 최고 온도 그래프")
+    }
+}
+
+struct MenuPanelView: View {
+    @ObservedObject var model: DashboardModel
+    var openDashboard: () -> Void
+    var openGuide: () -> Void
+    var body: some View {
+        VStack(alignment:.leading,spacing:16) {
+            HStack {
+                Label("CoolCurve",systemImage:"fanblades.fill")
+                    .font(.system(size:16,weight:.semibold)).foregroundStyle(blue)
+                Spacer()
+                Text(model.fresh ? "실시간" : "확인 중")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            HStack(spacing:8) {
+                Circle().fill(model.state == "auto" ? teal : (model.state == "active" ? blue : .orange)).frame(width:7,height:7)
+                Text(model.statusTitle).font(.system(size:13,weight:.semibold))
+                Spacer()
+            }
+            HStack(spacing:8) {
+                metric("CPU 최고",value:model.cpu,unit:"°C",color:blue)
+                metric("GPU 최고",value:model.gpu,unit:"°C",color:teal)
+            }
+            HStack {
+                Label("팬 속도",systemImage:"fanblades").foregroundStyle(.secondary)
+                Spacer()
+                Text(model.rpm.map { String(format:"%.0f",$0) } ?? "—").font(.system(size:23,weight:.medium,design:.rounded)).monospacedDigit()
+                Text("RPM").font(.caption).foregroundStyle(.secondary)
+            }
+            if model.state == "active", let target = model.target {
+                Text("요청 속도 \(Int(target)) RPM").font(.caption).foregroundStyle(.secondary)
+            }
+            Text(model.statusDetail).font(.system(size:12)).foregroundStyle(.secondary)
+                .fixedSize(horizontal:false,vertical:true)
+            Divider()
+            if model.canStop {
+                Button(action:model.stop) { Label("애플 자동으로 복귀",systemImage:"arrow.uturn.backward").frame(maxWidth:.infinity) }
+                    .controlSize(.large)
+            } else {
+                Button(action:model.start) { Label("사용자 커브 시작…",systemImage:"waveform.path").frame(maxWidth:.infinity) }
+                    .controlSize(.large).disabled(!model.canStart)
+            }
+            HStack {
+                Button("대시보드 열기",action:openDashboard).buttonStyle(.link)
+                Spacer()
+                Button(action:openGuide) { Image(systemName:"questionmark.circle") }.buttonStyle(.plain).help("설정과 사용 안내").accessibilityLabel("설정과 사용 안내")
+                Button(action:model.quit) { Image(systemName:"power") }.buttonStyle(.plain).help("자동 복귀 후 종료").accessibilityLabel("자동 복귀 후 종료")
+            }
+        }
+        .padding(20).frame(width:330,height:440,alignment:.top)
+        .foregroundStyle(Color.primary)
+        .background(Color(nsColor:.windowBackgroundColor))
+    }
+    func metric(_ title:String,value:Double?,unit:String,color:Color) -> some View {
+        VStack(alignment:.leading,spacing:8) {
+            Text(title).font(.caption).foregroundStyle(.secondary)
+            HStack(alignment:.firstTextBaseline,spacing:3) {
+                Text(value.map { String(format:"%.1f",$0) } ?? "—")
+                    .font(.system(size:26,weight:.semibold,design:.rounded)).monospacedDigit()
+                Text(unit).font(.caption).foregroundStyle(.secondary)
+            }
+            Capsule().fill(color).frame(height:3)
+        }.padding(12).frame(maxWidth:.infinity,alignment:.leading)
+            .background(Color.primary.opacity(0.04),in:RoundedRectangle(cornerRadius:12))
     }
 }
