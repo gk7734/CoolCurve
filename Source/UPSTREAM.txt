@@ -1,0 +1,4 @@
+Stats SMC implementation: https://github.com/exelban/stats
+Fetched tree: 434e2668f8308e59a20fbc7f97094e0594ab10cb
+File: SMC/smc.swift
+License: MIT
