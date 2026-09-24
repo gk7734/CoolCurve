@@ -282,10 +282,10 @@ struct MenuPanelView: View {
         VStack(alignment:.leading,spacing:16) {
             HStack {
                 Label("CoolCurve",systemImage:"fanblades.fill")
-                    .font(.system(size:16,weight:.semibold)).foregroundStyle(blue)
+                    .font(.system(size:16,weight:.semibold)).foregroundStyle(Color(red:0.43,green:0.70,blue:1))
                 Spacer()
                 Text(model.fresh ? "실시간" : "확인 중")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.system(size:12,weight:.medium)).foregroundStyle(Color.white.opacity(0.85))
             }
             HStack(spacing:8) {
                 Circle().fill(model.state == "auto" ? teal : (model.state == "active" ? blue : .orange)).frame(width:7,height:7)
@@ -297,15 +297,15 @@ struct MenuPanelView: View {
                 metric("GPU 최고",value:model.gpu,unit:"°C",color:teal)
             }
             HStack {
-                Label("팬 속도",systemImage:"fanblades").foregroundStyle(.secondary)
+                Label("팬 속도",systemImage:"fanblades").foregroundStyle(Color.white.opacity(0.85))
                 Spacer()
                 Text(model.rpm.map { String(format:"%.0f",$0) } ?? "—").font(.system(size:23,weight:.medium,design:.rounded)).monospacedDigit()
-                Text("RPM").font(.caption).foregroundStyle(.secondary)
+                Text("RPM").font(.system(size:12,weight:.medium)).foregroundStyle(Color.white.opacity(0.85))
             }
             if model.state == "active", let target = model.target {
-                Text("요청 속도 \(Int(target)) RPM").font(.caption).foregroundStyle(.secondary)
+                Text("요청 속도 \(Int(target)) RPM").font(.system(size:12,weight:.medium)).foregroundStyle(Color.white.opacity(0.85))
             }
-            Text(model.statusDetail).font(.system(size:12)).foregroundStyle(.secondary)
+            Text(model.statusDetail).font(.system(size:13)).foregroundStyle(Color.white.opacity(0.85))
                 .fixedSize(horizontal:false,vertical:true)
             Divider()
             if model.canStop {
@@ -323,19 +323,21 @@ struct MenuPanelView: View {
             }
         }
         .padding(20).frame(width:330,height:440,alignment:.top)
-        .foregroundStyle(Color.primary)
-        .glassEffect(.clear,in:RoundedRectangle(cornerRadius:20))
+        .foregroundStyle(Color.white)
+        .background(Color.black.opacity(0.18),in:RoundedRectangle(cornerRadius:20))
+        .glassEffect(.regular.tint(Color.black.opacity(0.25)),in:RoundedRectangle(cornerRadius:20))
+        .environment(\.colorScheme,.dark)
     }
     func metric(_ title:String,value:Double?,unit:String,color:Color) -> some View {
         VStack(alignment:.leading,spacing:8) {
-            Text(title).font(.caption).foregroundStyle(.secondary)
+            Text(title).font(.system(size:12,weight:.medium)).foregroundStyle(Color.white.opacity(0.85))
             HStack(alignment:.firstTextBaseline,spacing:3) {
                 Text(value.map { String(format:"%.1f",$0) } ?? "—")
                     .font(.system(size:26,weight:.semibold,design:.rounded)).monospacedDigit()
-                Text(unit).font(.caption).foregroundStyle(.secondary)
+                Text(unit).font(.system(size:12,weight:.medium)).foregroundStyle(Color.white.opacity(0.85))
             }
             Capsule().fill(color).frame(height:3)
         }.padding(12).frame(maxWidth:.infinity,alignment:.leading)
-            .background(Color.primary.opacity(0.04),in:RoundedRectangle(cornerRadius:12))
+            .background(Color.black.opacity(0.18),in:RoundedRectangle(cornerRadius:12))
     }
 }
