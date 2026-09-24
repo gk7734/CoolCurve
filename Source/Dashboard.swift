@@ -324,7 +324,7 @@ struct MenuPanelView: View {
         }
         .padding(20).frame(width:330,height:440,alignment:.top)
         .foregroundStyle(Color.primary)
-        .background(Color(nsColor:.windowBackgroundColor))
+        .glassEffect(.clear,in:RoundedRectangle(cornerRadius:20))
     }
     func metric(_ title:String,value:Double?,unit:String,color:Color) -> some View {
         VStack(alignment:.leading,spacing:8) {
