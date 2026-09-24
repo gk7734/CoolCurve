@@ -324,8 +324,8 @@ struct MenuPanelView: View {
         }
         .padding(20).frame(width:330,height:440,alignment:.top)
         .foregroundStyle(Color.white)
-        .background(Color.black.opacity(0.18),in:RoundedRectangle(cornerRadius:20))
-        .glassEffect(.regular.tint(Color.black.opacity(0.25)),in:RoundedRectangle(cornerRadius:20))
+        .background(Color.black.opacity(0.08),in:RoundedRectangle(cornerRadius:20))
+        .glassEffect(.regular.tint(Color.white.opacity(0.08)),in:RoundedRectangle(cornerRadius:20))
         .environment(\.colorScheme,.dark)
     }
     func metric(_ title:String,value:Double?,unit:String,color:Color) -> some View {
@@ -338,6 +338,6 @@ struct MenuPanelView: View {
             }
             Capsule().fill(color).frame(height:3)
         }.padding(12).frame(maxWidth:.infinity,alignment:.leading)
-            .background(Color.black.opacity(0.18),in:RoundedRectangle(cornerRadius:12))
+            .background(Color.black.opacity(0.08),in:RoundedRectangle(cornerRadius:12))
     }
 }
