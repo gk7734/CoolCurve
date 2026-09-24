@@ -135,7 +135,7 @@ func helper(_ parent: Int32, _ born: UInt64) -> Never {
     exit(ok ? child.terminationStatus : 5)
 }
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     var item: NSStatusItem!, menu = NSMenu(), status = NSMenuItem(), reading = NSMenuItem(), detail = NSMenuItem()
     var startItem: NSMenuItem!, stopItem: NSMenuItem!
     var smc: SMC!, timer: Timer?, leaseProcess: Process?, heartbeat: Pipe?, authorizer: Process?
@@ -143,12 +143,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let dashboard = DashboardModel()
     var window: NSWindow!, sensorTimer: Timer?
     let popover = NSPopover()
+    var outsideClickMonitor: Any?, localClickMonitor: Any?
+    func removePopoverMonitors() {
+        if let monitor = outsideClickMonitor { NSEvent.removeMonitor(monitor) }
+        if let monitor = localClickMonitor { NSEvent.removeMonitor(monitor) }
+        outsideClickMonitor = nil; localClickMonitor = nil
+    }
+    func popoverDidClose(_ notification: Notification) { removePopoverMonitors() }
+    func installPopoverMonitors() {
+        removePopoverMonitors()
+        outsideClickMonitor = NSEvent.addGlobalMonitorForEvents(matching:[.leftMouseDown,.rightMouseDown,.otherMouseDown]) { [weak self] _ in
+            self?.popover.performClose(nil)
+        }
+        localClickMonitor = NSEvent.addLocalMonitorForEvents(matching:[.leftMouseDown,.rightMouseDown,.otherMouseDown,.keyDown]) { [weak self] event in
+            guard let self, self.popover.isShown else { return event }
+            if event.type == .keyDown {
+                if event.keyCode == 53 { self.popover.performClose(nil); return nil }
+                return event
+            }
+            if event.window !== self.popover.contentViewController?.view.window && event.window !== self.item.button?.window {
+                self.popover.performClose(nil)
+            }
+            return event
+        }
+    }
     @objc func togglePopover() {
         if popover.isShown { popover.performClose(nil); return }
         guard let button = item.button else { return }
         refresh()
         popover.show(relativeTo:button.bounds,of:button,preferredEdge:.minY)
         popover.contentViewController?.view.window?.makeKey()
+        installPopoverMonitors()
     }
     let sensorQueue = DispatchQueue(label:"local.coolcurve.sensors")
     var readingSensors = false
@@ -178,6 +203,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.button?.target = self
         item.button?.action = #selector(togglePopover)
         item.button?.toolTip = "CoolCurve · 온도와 팬 속도 보기"
+        popover.delegate = self
         popover.behavior = .transient
         popover.contentSize = NSSize(width:330,height:440)
         popover.contentViewController = NSHostingController(rootView:MenuPanelView(model:dashboard,
@@ -302,7 +328,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         quitting = true; stop()
         if authorizer == nil { NSApp.terminate(nil) }
     }
-    func applicationWillTerminate(_ notification: Notification) { stop() }
+    func applicationWillTerminate(_ notification: Notification) { removePopoverMonitors(); stop() }
     @objc func guide() {
         let curve = CoolingPolicy.points.map { "\(Int($0.0))°C → \(Int($0.1)) RPM" }.joined(separator:"\n")
         alert("CoolCurve · FL 균형 커브", "CPU·GPU 최고 온도를 기준으로 조절합니다.\n\n"+curve+"\n\n일반 온도 상승은 4초 시간상수로 완화하고, 2초마다 최대 300 RPM씩 올립니다. 하강은 8초 시간상수·2°C 차이·20초 대기 후 최대 100 RPM씩 낮춥니다.\n85°C 이상은 상승 지연 없이 반응하고 92°C 이상은 최대 속도를 요청합니다. 기기 위험 온도 기준이 아닌 사용자 설정입니다.\n\n시작 시 관리자 인증이 필요합니다. Stats와 Macs Fan Control은 자동으로 두세요. 종료·센서 오류·잠자기에는 애플 자동 복귀를 시도합니다.\n\n이전 커브의 실기 제어와 연결 종료 복귀는 확인했습니다. 이번 커브는 시뮬레이션 검증을 마쳤으며 장시간·고부하 실기 검증은 아직 남아 있습니다.")
