@@ -15,11 +15,11 @@
 	<key>CFBundleShortVersionString</key>
 	<string>0.4.0</string>
 	<key>CFBundleVersion</key>
-	<string>5</string>
+	<string>6</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>27.0</string>
 	<key>LSUIElement</key>
-	<false/>
+	<true/>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 </dict>

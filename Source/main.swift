@@ -236,7 +236,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         sensorTimer = Timer.scheduledTimer(withTimeInterval:5,repeats:true) { [weak self] _ in self?.refresh() }
         RunLoop.main.add(timer!,forMode:.common)
         RunLoop.main.add(sensorTimer!,forMode:.common)
-        refresh(); showDashboard()
+        refresh()
     }
     func refresh() {
         guard !readingSensors else { return }
@@ -354,6 +354,6 @@ if args.contains("--probe") {
 }
 signal(SIGPIPE,SIG_IGN)
 let app = NSApplication.shared
-app.setActivationPolicy(.regular)
+app.setActivationPolicy(.accessory)
 let delegate = AppDelegate(); app.delegate = delegate
 app.run()
