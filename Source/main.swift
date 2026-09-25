@@ -186,6 +186,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         showDashboard(); return true
     }
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.applicationIconImage = NSImage(named:"AppIcon")
         smc = SMC()
         item = NSStatusBar.system.statusItem(withLength:NSStatusItem.variableLength)
         item.button?.title = "❋ CoolCurve"

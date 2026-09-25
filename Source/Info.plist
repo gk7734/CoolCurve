@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleExecutable</key>
 	<string>CoolCurve</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>local.coolcurve.macmini</string>
 	<key>CFBundleName</key>
@@ -13,7 +15,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>0.4.0</string>
 	<key>CFBundleVersion</key>
-	<string>4</string>
+	<string>5</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>27.0</string>
 	<key>LSUIElement</key>

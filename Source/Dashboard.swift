@@ -68,8 +68,7 @@ struct DashboardView: View {
     var body: some View {
         VStack(alignment:.leading,spacing:22) {
             HStack(spacing:12) {
-                Image(systemName:"fanblades.fill").font(.system(size:26)).foregroundStyle(.white)
-                    .frame(width:48,height:48).background(blue.gradient,in:RoundedRectangle(cornerRadius:14))
+                Image(nsImage:NSImage(named:"AppIcon") ?? NSImage()).resizable().frame(width:48,height:48)
                 VStack(alignment:.leading,spacing:3) {
                     Text("CoolCurve").font(.system(size:25,weight:.semibold,design:.rounded))
                     Text("Mac mini M5 Pro · 냉각 대시보드").font(.subheadline).foregroundStyle(.secondary)
